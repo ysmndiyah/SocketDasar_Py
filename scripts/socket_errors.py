@@ -1,48 +1,45 @@
-import sys
+#Menangani error saat koneksi socket ke server HTTP.
+
 import socket
 
-def main():
-    # Meminta input host, port, dan file dari pengguna
-    host = input("Masukkan alamat host: ")
-    port = int(input("Masukkan port: "))
-    filename = input("Masukkan nama file: ")
-
-    # First try-except block -- create socket
+def request_http(host, port, filename):
     try:
+        # Membuat socket
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    except socket.error as e:
-        print("Error creating socket: %s" % e)
-        sys.exit(1)
-        
-    # Second try-except block -- connect to the given host/port
-    try:
+        print(f"🔗 Mencoba koneksi ke {host}:{port}")
         s.connect((host, port))
-    except socket.gaierror as e:
-        print("Address-related error connecting to server: %s" % e)
-        sys.exit(1)
-    except socket.error as e:
-        print("Connection error: %s" % e)
-        sys.exit(1)
 
-    # Third try-except block -- sending data
-    try:
-        msg = "GET %s HTTP/1.0\r\n\r\n" % filename
-        s.sendall(msg.encode('utf-8'))
-    except socket.error as e:
-        print("Error sending data: %s" % e)
-        sys.exit(1)
+        # Kirim request HTTP sederhana
+        request = f"GET {filename} HTTP/1.1\r\nHost: {host}\r\nConnection: close\r\n\r\n"
+        s.sendall(request.encode())
 
-    while True:
-        # Fourth try-except block -- waiting to receive data from the remote host
-        try:
+        # Terima data dari server
+        response = b""
+        while True:
             buf = s.recv(2048)
-        except socket.error as e:
-            print("Error receiving data: %s" % e)
-            sys.exit(1)
-        if not len(buf):
-            break
-        # Write the received data
-        sys.stdout.write(buf.decode('utf-8'))
+            if not buf:
+                break
+            response += buf
 
-if __name__ == '__main__':
-    main()
+        # Tampilkan hasil
+        print("Koneksi berhasil. Baris pertama respons:")
+        print(response.decode(errors="ignore").split("\r\n")[0])
+
+    except socket.gaierror:
+        print("Host tidak ditemukan (socket.gaierror)")
+    except ConnectionRefusedError:
+        print("Koneksi ditolak (ConnectionRefusedError)")
+    except socket.timeout:
+        print("Koneksi timeout (socket.timeout)")
+    except socket.error as e:
+        print("Error socket lainnya:", e)
+    finally:
+        s.close()
+
+
+if __name__ == "__main__":
+    # Jalankan manual tanpa main_runner
+    host = input("Masukkan host: ")
+    port = int(input("Masukkan port: "))
+    file = input("Masukkan file (misal, index.html): ")
+    request_http(host, port, file)

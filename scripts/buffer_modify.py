@@ -3,7 +3,7 @@ import socket
 SEND_BUF_SIZE = 4096
 RECV_BUF_SIZE = 4096
 
-def modify_buff_size():
+def show_and_modify_buffers():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
     #Get the size of the socket's send buffer
@@ -16,5 +16,5 @@ def modify_buff_size():
     bufsize = sock.getsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF)
     print("Buffer size[After]: %d" % bufsize)
     
-if __name__ == '__main__':
-    modify_buff_size()
+if __name__ == "__main__":
+    show_and_modify_buffers()
