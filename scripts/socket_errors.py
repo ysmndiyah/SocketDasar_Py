@@ -1,19 +1,13 @@
 import sys
 import socket
-import argparse
 
 def main():
-    # Setup argumen parsing
-    parser = argparse.ArgumentParser(description='Socket Error Example')
-    parser.add_argument('--host', action="store", dest="host", required=False)
-    parser.add_argument('--port', action="store", dest="port", type=int, required=False)
-    parser.add_argument('--file', action="store", dest="file", required=False)
-    given_args = parser.parse_args()
-    host = given_args.host
-    port = given_args.port
-    filename = given_args.file
-    
-    # First try-except block --create socket
+    # Meminta input host, port, dan file dari pengguna
+    host = input("Masukkan alamat host: ")
+    port = int(input("Masukkan port: "))
+    filename = input("Masukkan nama file: ")
+
+    # First try-except block -- create socket
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     except socket.error as e:
@@ -29,17 +23,17 @@ def main():
     except socket.error as e:
         print("Connection error: %s" % e)
         sys.exit(1)
-        
-    # Third try-except block --sending data
-    try: 
+
+    # Third try-except block -- sending data
+    try:
         msg = "GET %s HTTP/1.0\r\n\r\n" % filename
         s.sendall(msg.encode('utf-8'))
     except socket.error as e:
-        print("Error sending data: %s" %e)
+        print("Error sending data: %s" % e)
         sys.exit(1)
-        
+
     while True:
-        # Fourth try--except block -- waiting to receive data from the remote host
+        # Fourth try-except block -- waiting to receive data from the remote host
         try:
             buf = s.recv(2048)
         except socket.error as e:
@@ -47,9 +41,8 @@ def main():
             sys.exit(1)
         if not len(buf):
             break
-        #Write the received data
+        # Write the received data
         sys.stdout.write(buf.decode('utf-8'))
-        
+
 if __name__ == '__main__':
     main()
-
